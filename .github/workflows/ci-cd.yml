@@ -59,10 +59,16 @@ jobs:
           APP_NAME=service-order-os-service
           APP_VERSION=3.0.0
           ENVIRONMENT=production
+          APP_RUNTIME_MODE=real
           LOG_LEVEL=INFO
           LOG_JSON=true
           EMAIL_PROVIDER=NOOP
           DATABASE_URL=postgresql+asyncpg://user:pass@localhost:5432/service_order_db
+          MONGODB_URL=mongodb://mongo:27017/service_order
+          RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/%2F
+          RABBITMQ_EXCHANGE=service-order.events
+          RABBITMQ_ROUTING_KEY=service-order.os
+          RABBITMQ_QUEUE=service-order.os.events
           APP_BASE_URL=https://api.example.com/api
           CORS_ALLOWED_ORIGINS=https://app.example.com
           TRUSTED_HOSTS=api.example.com
