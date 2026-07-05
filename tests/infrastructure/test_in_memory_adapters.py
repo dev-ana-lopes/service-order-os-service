@@ -29,8 +29,8 @@ def test_in_memory_repository_raises_when_service_order_is_missing() -> None:
 
 def test_in_memory_publisher_keeps_event_order() -> None:
     publisher = InMemoryEventPublisher()
-    first = DomainEvent(event_type="FIRST", correlation_id="os-1", payload={})
-    second = DomainEvent(event_type="SECOND", correlation_id="os-1", payload={})
+    first = DomainEvent(event_type="OS_OPENED", correlation_id="os-1", payload={})
+    second = DomainEvent(event_type="PAYMENT_PENDING", correlation_id="os-1", payload={})
 
     publisher.publish(first)
     publisher.publish(second)
