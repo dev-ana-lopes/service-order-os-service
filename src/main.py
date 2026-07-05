@@ -8,8 +8,12 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from .infrastructure.config.settings import Settings, get_settings
 from .infrastructure.logging import configure_logging
+from .infrastructure.messaging.in_memory_event_publisher import InMemoryEventPublisher
 from .infrastructure.observability.metrics import REQUEST_COUNTER, REQUEST_DURATION
-from .presentation.api.routes import health_router, metrics_router
+from .infrastructure.repositories.in_memory_service_order_repository import (
+    InMemoryServiceOrderRepository,
+)
+from .presentation.api.routes import health_router, metrics_router, service_order_router
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +31,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         version=settings.APP_VERSION,
     )
     app.state.settings = settings
+    app.state.service_order_repository = InMemoryServiceOrderRepository()
+    app.state.event_publisher = InMemoryEventPublisher()
 
     if settings.TRUSTED_HOSTS and settings.TRUSTED_HOSTS != ["*"]:
         app.add_middleware(TrustedHostMiddleware, allowed_hosts=settings.TRUSTED_HOSTS)
@@ -75,6 +81,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(metrics_router)
+    app.include_router(service_order_router)
     return app
 
 
