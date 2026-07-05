@@ -13,7 +13,12 @@ from .infrastructure.observability.metrics import REQUEST_COUNTER, REQUEST_DURAT
 from .infrastructure.repositories.in_memory_service_order_repository import (
     InMemoryServiceOrderRepository,
 )
-from .presentation.api.routes import health_router, metrics_router, service_order_router
+from .presentation.api.routes import (
+    event_router,
+    health_router,
+    metrics_router,
+    service_order_router,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +87,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(health_router)
     app.include_router(metrics_router)
     app.include_router(service_order_router)
+    app.include_router(event_router)
     return app
 
 
