@@ -1,5 +1,3 @@
-"""Use cases for service order orchestration."""
-
 from __future__ import annotations
 
 from dataclasses import dataclass
