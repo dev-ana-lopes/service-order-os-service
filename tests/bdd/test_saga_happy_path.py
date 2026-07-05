@@ -21,7 +21,7 @@ from tests.application.test_use_cases import (
     "Complete a service order after quote, payment, and execution events",
 )
 def test_service_order_saga_happy_path() -> None:
-    """BDD coverage for the application-level saga happy path."""
+    pass
 
 
 @pytest.fixture
