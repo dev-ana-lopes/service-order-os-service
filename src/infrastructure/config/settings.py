@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     RABBITMQ_EXCHANGE: str = "service-order.events"
     RABBITMQ_ROUTING_KEY: str = "service-order.os"
     RABBITMQ_QUEUE: str = "service-order.os.events"
+    RABBITMQ_CONSUME_ROUTING_KEYS: Annotated[list[str], NoDecode] = Field(
+        default_factory=lambda: ["service-order.billing", "service-order.execution"]
+    )
     JWT_SECRET: str = "dev-jwt-secret-with-32-characters"
     JWT_SECRET_FILE: str | None = None
     CUSTOMER_JWT_SECRET: str = ""
@@ -74,7 +77,12 @@ class Settings(BaseSettings):
     OTEL_SERVICE_NAME: str = "service-order-os-service"
     OTEL_EXPORTER_OTLP_ENDPOINT: str = ""
 
-    @field_validator("CORS_ALLOWED_ORIGINS", "TRUSTED_HOSTS", mode="before")
+    @field_validator(
+        "CORS_ALLOWED_ORIGINS",
+        "TRUSTED_HOSTS",
+        "RABBITMQ_CONSUME_ROUTING_KEYS",
+        mode="before",
+    )
     @classmethod
     def parse_list_settings(cls, value: str | list[str]) -> list[str]:
         return parse_csv_or_json_list(value)
