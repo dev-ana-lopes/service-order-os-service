@@ -8,22 +8,67 @@ from src.infrastructure.messaging.rabbitmq_blocking_publisher import (
 from src.infrastructure.messaging.rabbitmq_blocking_worker import (
     RabbitMqBlockingEventWorker,
 )
+from src.infrastructure.repositories.in_memory_admin_user_repository import (
+    InMemoryAdminUserRepository,
+)
+from src.infrastructure.repositories.in_memory_customer_repository import (
+    InMemoryCustomerRepository,
+)
 from src.infrastructure.repositories.in_memory_service_order_repository import (
     InMemoryServiceOrderRepository,
+)
+from src.infrastructure.repositories.in_memory_vehicle_repository import (
+    InMemoryVehicleRepository,
 )
 from src.infrastructure.repositories.processed_event_repositories import (
     InMemoryProcessedEventRepository,
     SqlAlchemyProcessedEventRepository,
 )
+from src.infrastructure.repositories.sqlalchemy_customer_repository import (
+    SqlAlchemyCustomerRepository,
+)
+from src.infrastructure.repositories.sqlalchemy_admin_user_repository import (
+    SqlAlchemyAdminUserRepository,
+)
 from src.infrastructure.repositories.sqlalchemy_service_order_repository import (
     SqlAlchemyServiceOrderRepository,
 )
+from src.infrastructure.repositories.sqlalchemy_vehicle_repository import (
+    SqlAlchemyVehicleRepository,
+)
+from src.infrastructure.security import AdminJwtService, PasswordHasher
 
 
 def build_service_order_repository(settings: Settings):
     if settings.APP_RUNTIME_MODE == "real":
         return SqlAlchemyServiceOrderRepository(settings.DATABASE_URL)
     return InMemoryServiceOrderRepository()
+
+
+def build_customer_repository(settings: Settings):
+    if settings.APP_RUNTIME_MODE == "real":
+        return SqlAlchemyCustomerRepository(settings.DATABASE_URL)
+    return InMemoryCustomerRepository()
+
+
+def build_admin_user_repository(settings: Settings):
+    if settings.APP_RUNTIME_MODE == "real":
+        return SqlAlchemyAdminUserRepository(settings.DATABASE_URL)
+    return InMemoryAdminUserRepository()
+
+
+def build_vehicle_repository(settings: Settings):
+    if settings.APP_RUNTIME_MODE == "real":
+        return SqlAlchemyVehicleRepository(settings.DATABASE_URL)
+    return InMemoryVehicleRepository()
+
+
+def build_password_hasher() -> PasswordHasher:
+    return PasswordHasher()
+
+
+def build_admin_jwt_service(settings: Settings) -> AdminJwtService:
+    return AdminJwtService(settings)
 
 
 def build_event_publisher(settings: Settings):

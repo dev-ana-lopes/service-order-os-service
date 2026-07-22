@@ -1,5 +1,6 @@
 import pytest
 from httpx import ASGITransport, AsyncClient
+from jose import jwt
 
 from src.domain.events import DomainEvent
 from src.infrastructure.config.settings import Settings
@@ -14,7 +15,8 @@ def test_event_contract_rejects_invalid_message():
 
 @pytest.mark.asyncio
 async def test_event_api_lists_and_drains_published_messages():
-    app = create_app(_settings())
+    settings = _settings()
+    app = create_app(settings)
     app.state.event_publisher.publish(
         DomainEvent(
             event_type="OS_OPENED",
@@ -23,11 +25,12 @@ async def test_event_api_lists_and_drains_published_messages():
         )
     )
     transport = ASGITransport(app=app)
+    headers = {"Authorization": f"Bearer {_admin_token(settings)}"}
 
     async with AsyncClient(transport=transport, base_url="http://testserver") as client:
-        list_response = await client.get("/events")
-        drain_response = await client.post("/events/drain")
-        empty_response = await client.get("/events")
+        list_response = await client.get("/events", headers=headers)
+        drain_response = await client.post("/events/drain", headers=headers)
+        empty_response = await client.get("/events", headers=headers)
 
     assert list_response.status_code == 200
     assert list_response.json()["events"][0]["event_type"] == "OS_OPENED"
@@ -42,5 +45,12 @@ def _settings() -> Settings:
         ENVIRONMENT="test",
         DATABASE_URL="postgresql+asyncpg://user:pass@localhost:5432/db",
         JWT_SECRET="test-secret-value-with-32-characters",
-        APPROVAL_TOKEN_SECRET="approval-secret-value-with-32-chars",
+    )
+
+
+def _admin_token(settings: Settings) -> str:
+    return jwt.encode(
+        {"role": "admin", "user_id": "admin-1", "iss": settings.JWT_ISSUER},
+        settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM,
     )

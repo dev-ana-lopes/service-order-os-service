@@ -7,16 +7,24 @@ python - <<'PY'
 import os
 import socket
 import sys
-
-from src.infrastructure.database.url_utils import validate_runtime_database_url
-
+from urllib.parse import urlparse
 
 database_url = os.environ.get("DATABASE_URL", "").strip()
 
-try:
-    host, port, database = validate_runtime_database_url(database_url)
-except ValueError as exc:
-    print(f"[entrypoint] {exc}", flush=True)
+if not database_url:
+    print("[entrypoint] DATABASE_URL is required", flush=True)
+    sys.exit(1)
+
+parsed = urlparse(database_url)
+host = parsed.hostname
+port = parsed.port
+database = parsed.path.lstrip("/")
+
+if not host or not port or not database:
+    print(
+        "[entrypoint] DATABASE_URL must include host, port, and database name",
+        flush=True,
+    )
     sys.exit(1)
 
 print(
@@ -44,26 +52,7 @@ else:
 PY
 
 if [ "$should_migrate" != "false" ]; then
-  echo "[entrypoint] Running migrations (alembic upgrade head)..."
-  attempts="${MIGRATE_MAX_ATTEMPTS:-30}"
-  sleep_seconds="${MIGRATE_RETRY_SLEEP_SECONDS:-2}"
-
-  i=1
-  while [ "$i" -le "$attempts" ]; do
-    if alembic -c alembic/alembic.ini upgrade head; then
-      echo "[entrypoint] Migrations applied."
-      break
-    fi
-
-    echo "[entrypoint] Migration attempt $i/$attempts failed; retrying in ${sleep_seconds}s..."
-    i=$((i + 1))
-    sleep "$sleep_seconds"
-  done
-
-  if [ "$i" -gt "$attempts" ]; then
-    echo "[entrypoint] Migrations failed after ${attempts} attempts."
-    exit 1
-  fi
+  echo "[entrypoint] MIGRATE_ON_STARTUP requested, but local Docker bootstrap uses SQLAlchemy create_all and skips Alembic."
 fi
 
 echo "[entrypoint] Starting application: $*"

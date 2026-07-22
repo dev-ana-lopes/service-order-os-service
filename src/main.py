@@ -10,12 +10,23 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 from .infrastructure.config.settings import Settings, get_settings
 from .infrastructure.logging import configure_logging
 from .infrastructure.observability.metrics import REQUEST_COUNTER, REQUEST_DURATION
-from .infrastructure.runtime import build_event_publisher, build_service_order_repository
+from .infrastructure.runtime import (
+    build_admin_jwt_service,
+    build_admin_user_repository,
+    build_customer_repository,
+    build_event_publisher,
+    build_password_hasher,
+    build_service_order_repository,
+    build_vehicle_repository,
+)
 from .presentation.api.routes import (
+    auth_router,
+    customer_router,
     event_router,
     health_router,
     metrics_router,
     service_order_router,
+    vehicle_router,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,6 +51,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     app.state.settings = settings
     app.state.service_order_repository = build_service_order_repository(settings)
+    app.state.admin_user_repository = build_admin_user_repository(settings)
+    app.state.customer_repository = build_customer_repository(settings)
+    app.state.vehicle_repository = build_vehicle_repository(settings)
+    app.state.password_hasher = build_password_hasher()
+    app.state.admin_jwt_service = build_admin_jwt_service(settings)
     app.state.event_publisher = build_event_publisher(settings)
 
     if settings.TRUSTED_HOSTS and settings.TRUSTED_HOSTS != ["*"]:
@@ -89,7 +105,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     app.include_router(health_router)
     app.include_router(metrics_router)
+    app.include_router(auth_router)
+    app.include_router(customer_router)
     app.include_router(service_order_router)
+    app.include_router(vehicle_router)
     app.include_router(event_router)
     return app
 

@@ -2,9 +2,18 @@ import pytest
 
 from src.application.use_cases import (
     HandleSagaEventUseCase,
+    LoginAdminUserCommand,
+    LoginAdminUserUseCase,
     OpenServiceOrderCommand,
     OpenServiceOrderUseCase,
+    RegisterAdminUserCommand,
+    RegisterAdminUserUseCase,
 )
+from src.infrastructure.repositories.in_memory_admin_user_repository import (
+    InMemoryAdminUserRepository,
+)
+from src.infrastructure.security import AdminJwtService, PasswordHasher
+from src.infrastructure.config.settings import Settings
 from src.domain.events import DomainEvent
 from src.domain.service_order import ServiceOrder, ServiceOrderStatus
 
@@ -120,6 +129,33 @@ def test_unsupported_saga_event_raises_error() -> None:
         HandleSagaEventUseCase(repository, publisher).execute(
             _event("UNKNOWN", service_order.service_order_id)
         )
+
+
+def test_register_and_login_admin_user_use_cases() -> None:
+    repository = InMemoryAdminUserRepository()
+    password_hasher = PasswordHasher()
+    jwt_service = AdminJwtService(
+        Settings(
+            ENVIRONMENT="test",
+            JWT_SECRET="test-secret-value-with-32-characters",
+        )
+    )
+
+    user = RegisterAdminUserUseCase(repository, password_hasher).execute(
+        RegisterAdminUserCommand(
+            email="admin@example.com",
+            password="123456",
+        )
+    )
+    token = LoginAdminUserUseCase(repository, password_hasher, jwt_service).execute(
+        LoginAdminUserCommand(
+            email="admin@example.com",
+            password="123456",
+        )
+    )
+
+    assert user.email == "admin@example.com"
+    assert token is not None
 
 
 def _event(event_type: str, service_order_id: str, **payload: str) -> DomainEvent:

@@ -54,7 +54,6 @@ class Settings(BaseSettings):
     CORS_ALLOW_CREDENTIALS: bool = True
     TRUSTED_HOSTS: Annotated[list[str], NoDecode] = Field(default_factory=lambda: ["*"])
     DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost:5432/service_order_db"
-    MONGODB_URL: str = "mongodb://localhost:27017/service_order"
     RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/%2F"
     RABBITMQ_EXCHANGE: str = "service-order.events"
     RABBITMQ_ROUTING_KEY: str = "service-order.os"
@@ -64,8 +63,12 @@ class Settings(BaseSettings):
     )
     JWT_SECRET: str = "dev-jwt-secret-with-32-characters"
     JWT_SECRET_FILE: str | None = None
+    JWT_ALGORITHM: str = "HS256"
+    JWT_ISSUER: str = ""
+    JWT_EXPIRATION_MINUTES: int = 60
     CUSTOMER_JWT_SECRET: str = ""
     CUSTOMER_JWT_SECRET_FILE: str | None = None
+    CUSTOMER_JWT_ALGORITHM: str = "HS256"
     CUSTOMER_JWT_ISSUER: str = "service-order-auth-lambda/development"
     HEALTHCHECK_TIMEOUT_SECONDS: int = 5
     DD_SERVICE: str = "service-order-os-service"
@@ -103,6 +106,8 @@ class Settings(BaseSettings):
             self.CUSTOMER_JWT_SECRET_FILE,
             "CUSTOMER_JWT_SECRET",
         )
+        if not self.JWT_ISSUER:
+            self.JWT_ISSUER = f"service-order-os-service/{self.ENVIRONMENT}"
         self.DD_SERVICE = self.APP_NAME
         self.DD_ENV = self.ENVIRONMENT
         self.DD_VERSION = self.APP_VERSION

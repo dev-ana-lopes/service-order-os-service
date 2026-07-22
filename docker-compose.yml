@@ -1,4 +1,4 @@
-﻿services:
+services:
   api:
     image: service-order-os-service:dev
     build: .
@@ -8,7 +8,8 @@
       - "8000:8000"
     env_file:
       - ${APP_ENV_FILE:-.env}
-    environment:
+    environment: &app_environment
+      APP_RUNTIME_MODE: real
       DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://service_order_user:service_order_password@postgres:5432/service_order_db}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       APP_NAME: ${APP_NAME:-service-order-os-service}
@@ -35,12 +36,23 @@
       JWT_SECRET_FILE: ${JWT_SECRET_FILE:-}
       JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
       JWT_EXPIRATION_MINUTES: ${JWT_EXPIRATION_MINUTES:-60}
+      CUSTOMER_JWT_SECRET: ${CUSTOMER_JWT_SECRET:-customer-dev-secret-with-at-least-32-char}
+      CUSTOMER_JWT_SECRET_FILE: ${CUSTOMER_JWT_SECRET_FILE:-}
+      CUSTOMER_JWT_ALGORITHM: ${CUSTOMER_JWT_ALGORITHM:-HS256}
+      CUSTOMER_JWT_ISSUER: ${CUSTOMER_JWT_ISSUER:-service-order-auth-lambda/development}
       HEALTHCHECK_TIMEOUT_SECONDS: ${HEALTHCHECK_TIMEOUT_SECONDS:-5}
-      MIGRATE_ON_STARTUP: ${MIGRATE_ON_STARTUP:-true}
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
+      RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE:-service-order.events}
+      RABBITMQ_ROUTING_KEY: ${RABBITMQ_ROUTING_KEY:-service-order.os}
+      RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-service-order.os.events}
+      RABBITMQ_CONSUME_ROUTING_KEYS: ${RABBITMQ_CONSUME_ROUTING_KEYS:-service-order.billing,service-order.execution}
+      MIGRATE_ON_STARTUP: "false"
       MIGRATE_MAX_ATTEMPTS: ${MIGRATE_MAX_ATTEMPTS:-30}
       MIGRATE_RETRY_SLEEP_SECONDS: ${MIGRATE_RETRY_SLEEP_SECONDS:-2}
     depends_on:
       postgres:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
       mailhog:
         condition: service_healthy
@@ -54,6 +66,26 @@
       timeout: 10s
       retries: 3
       start_period: 40s
+
+  worker:
+    image: service-order-os-service:dev
+    build: .
+    container_name: service-order-worker
+    command: ["python", "-m", "src.worker"]
+    env_file:
+      - ${APP_ENV_FILE:-.env}
+    environment:
+      <<: *app_environment
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - service-order-network
+    volumes:
+      - .:/app
+    restart: unless-stopped
 
   postgres:
     image: postgres:16-alpine
@@ -73,6 +105,23 @@
       interval: 10s
       timeout: 5s
       retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: service-order-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - service-order-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
@@ -95,4 +144,3 @@ volumes:
 networks:
   service-order-network:
     driver: bridge
-

@@ -76,6 +76,8 @@ Compensation paths mark the service order with a failure or review status and pu
 - `memory`: uses in-memory repository and publisher for local tests and fast demos.
 - `real`: uses SQLAlchemy PostgreSQL repository and RabbitMQ publisher.
 
+For the local Docker stack, `docker compose up --build` forces `APP_RUNTIME_MODE=real` so both the API and worker use PostgreSQL and RabbitMQ.
+
 ## Messaging
 
 RabbitMQ integration is represented by thin infrastructure adapters:
@@ -94,6 +96,8 @@ python -m src.worker
 
 It consumes Billing and Execution events from `RABBITMQ_CONSUME_ROUTING_KEYS`, applies the Saga handler, and stores processed `event_id` values before acknowledging messages.
 
+When using Docker locally, the worker is included in the default stack started by `docker compose up`.
+
 Environment variables:
 
 - `RABBITMQ_URL`
@@ -108,6 +112,8 @@ The OS boundary has a SQLAlchemy repository for service orders and status histor
 
 Processed integration events are stored in `processed_events` for idempotent worker consumption.
 
+Alembic migrations live under `alembic/` and remain the canonical schema management path for explicit migration jobs. Repository adapters still call `metadata.create_all` as a defensive bootstrap for local and test flows.
+
 ## Local Development
 
 ```bash
@@ -117,6 +123,28 @@ make test
 make test-cov
 make run-dev
 ```
+
+## Local Docker Stack
+
+The default `docker compose up --build` stack includes:
+
+- `api`
+- `worker`
+- `postgres`
+- `rabbitmq`
+- `mailhog`
+
+Useful local URLs:
+
+- API: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- RabbitMQ management: `http://localhost:15672`
+- MailHog: `http://localhost:8025`
+
+Notes:
+
+- `docker compose up` forces `APP_RUNTIME_MODE=real`, even if `.env` still says `memory`.
+- `MIGRATE_ON_STARTUP` is disabled in local Docker because schema changes are expected to run through explicit migration commands or jobs, not automatically on container start.
 
 ## Validation Evidence
 
