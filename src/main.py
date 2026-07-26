@@ -14,6 +14,7 @@ from .infrastructure.runtime import (
     build_admin_jwt_service,
     build_admin_user_repository,
     build_customer_repository,
+    build_database_readiness_probe,
     build_event_publisher,
     build_password_hasher,
     build_service_order_repository,
@@ -42,6 +43,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         close = getattr(app.state.event_publisher, "close", None)
         if close is not None:
             close()
+        close_probe = getattr(app.state.database_readiness_probe, "close", None)
+        if close_probe is not None:
+            close_probe()
 
     app = FastAPI(
         title="Service Order OS Service",
@@ -50,6 +54,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         lifespan=lifespan,
     )
     app.state.settings = settings
+    app.state.database_readiness_probe = build_database_readiness_probe(settings)
     app.state.service_order_repository = build_service_order_repository(settings)
     app.state.admin_user_repository = build_admin_user_repository(settings)
     app.state.customer_repository = build_customer_repository(settings)

@@ -21,3 +21,11 @@ def test_settings_resolve_secret_files(tmp_path: Path):
     settings = Settings(JWT_SECRET="", JWT_SECRET_FILE=str(secret_file))
 
     assert settings.JWT_SECRET == "jwt-secret-from-file"
+
+
+def test_settings_default_to_os_database_boundary():
+    settings = Settings()
+
+    assert settings.EXPECTED_DATABASE_NAME == "os_service_db"
+    assert settings.EXPECTED_DATABASE_USERNAME == "os_service_user"
+    assert "os_service_db" in settings.DATABASE_URL

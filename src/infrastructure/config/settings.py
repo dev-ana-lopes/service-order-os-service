@@ -53,7 +53,11 @@ class Settings(BaseSettings):
     )
     CORS_ALLOW_CREDENTIALS: bool = True
     TRUSTED_HOSTS: Annotated[list[str], NoDecode] = Field(default_factory=lambda: ["*"])
-    DATABASE_URL: str = "postgresql+asyncpg://user:pass@localhost:5432/service_order_db"
+    DATABASE_URL: str = (
+        "postgresql+asyncpg://os_service_user:os_service_password@localhost:5432/os_service_db"
+    )
+    EXPECTED_DATABASE_NAME: str = "os_service_db"
+    EXPECTED_DATABASE_USERNAME: str = "os_service_user"
     RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/%2F"
     RABBITMQ_EXCHANGE: str = "service-order.events"
     RABBITMQ_ROUTING_KEY: str = "service-order.os"

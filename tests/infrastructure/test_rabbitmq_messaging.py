@@ -168,6 +168,29 @@ def test_rabbitmq_consumer_validates_and_dispatches_message() -> None:
     assert handled == [message]
 
 
+def test_rabbitmq_consumer_accepts_payment_preference_created_message() -> None:
+    handled: list[dict[str, object]] = []
+    consumer = RabbitMqEventConsumer(lambda message: handled.append(message))
+    body = json.dumps(
+        {
+            "event_id": "event-2",
+            "event_type": "PAYMENT_PREFERENCE_CREATED",
+            "correlation_id": "os-1",
+            "occurred_at": "2026-07-05T12:00:00+00:00",
+            "payload": {
+                "service_order_id": "os-1",
+                "payment_id": "payment-1",
+                "preference_id": "pref-1",
+            },
+        }
+    ).encode("utf-8")
+
+    message = consumer.handle_message(body)
+
+    assert message["event_type"] == "PAYMENT_PREFERENCE_CREATED"
+    assert handled == [message]
+
+
 def test_rabbitmq_consumer_rejects_invalid_event_message() -> None:
     consumer = RabbitMqEventConsumer()
     body = json.dumps(

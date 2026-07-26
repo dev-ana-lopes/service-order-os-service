@@ -4,7 +4,7 @@ FastAPI microservice responsible for the service order lifecycle in the FIAP Pha
 
 ## Responsibility
 
-This service owns the service order identity, status history, Saga orchestration state, and lifecycle events. It does not read Billing or Execution databases.
+This service owns the service order identity, status history, Saga orchestration state, and lifecycle events. It does not read Billing or Execution databases, and it must run against its own PostgreSQL database/user pair.
 
 ## Architecture
 
@@ -110,6 +110,13 @@ Environment variables:
 
 The OS boundary has a SQLAlchemy repository for service orders and status history. `APP_RUNTIME_MODE=real` uses `DATABASE_URL`; `APP_RUNTIME_MODE=memory` keeps the local in-memory repository for tests.
 
+The default OS service ownership contract is:
+
+- database: `os_service_db`
+- user: `os_service_user`
+
+`/health/ready` validates both connectivity and ownership by checking the connected database name and user against `EXPECTED_DATABASE_NAME` and `EXPECTED_DATABASE_USERNAME`.
+
 Processed integration events are stored in `processed_events` for idempotent worker consumption.
 
 Alembic migrations live under `alembic/` and remain the canonical schema management path for explicit migration jobs. Repository adapters still call `metadata.create_all` as a defensive bootstrap for local and test flows.
@@ -136,8 +143,8 @@ The default `docker compose up --build` stack includes:
 
 Useful local URLs:
 
-- API: `http://localhost:8000`
-- Swagger: `http://localhost:8000/docs`
+- API: `http://localhost:8001`
+- Swagger: `http://localhost:8001/docs`
 - RabbitMQ management: `http://localhost:15672`
 - MailHog: `http://localhost:8025`
 

@@ -5,20 +5,22 @@ services:
     container_name: service-order-os-service
     command: ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
     ports:
-      - "8000:8000"
+      - "8001:8000"
     env_file:
       - ${APP_ENV_FILE:-.env}
     environment: &app_environment
       APP_RUNTIME_MODE: real
-      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://service_order_user:service_order_password@postgres:5432/service_order_db}
+      DATABASE_URL: ${DATABASE_URL:-postgresql+asyncpg://os_service_user:os_service_password@postgres:5432/os_service_db}
+      EXPECTED_DATABASE_NAME: ${EXPECTED_DATABASE_NAME:-os_service_db}
+      EXPECTED_DATABASE_USERNAME: ${EXPECTED_DATABASE_USERNAME:-os_service_user}
       ENVIRONMENT: ${ENVIRONMENT:-development}
       APP_NAME: ${APP_NAME:-service-order-os-service}
       APP_VERSION: ${APP_VERSION:-2.1.0}
-      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8000}
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8001}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
       LOG_JSON: ${LOG_JSON:-false}
       EMAIL_PROVIDER: ${EMAIL_PROVIDER:-SMTP}
-      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8000}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173,http://localhost:8001}
       TRUSTED_HOSTS: ${TRUSTED_HOSTS:-*}
       SMTP_HOST: ${SMTP_HOST:-mailhog}
       SMTP_PORT: ${SMTP_PORT:-1025}
@@ -70,7 +72,7 @@ services:
   worker:
     image: service-order-os-service:dev
     build: .
-    container_name: service-order-worker
+    container_name: service-order-os-worker
     command: ["python", "-m", "src.worker"]
     env_file:
       - ${APP_ENV_FILE:-.env}
@@ -89,11 +91,11 @@ services:
 
   postgres:
     image: postgres:16-alpine
-    container_name: service-order-postgres
+    container_name: service-order-os-postgres
     environment:
-      POSTGRES_DB: service_order_db
-      POSTGRES_USER: service_order_user
-      POSTGRES_PASSWORD: service_order_password
+      POSTGRES_DB: os_service_db
+      POSTGRES_USER: os_service_user
+      POSTGRES_PASSWORD: os_service_password
     ports:
       - "5432:5432"
     networks:
@@ -101,14 +103,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U service_order_user -d service_order_db"]
+      test: ["CMD-SHELL", "pg_isready -U os_service_user -d os_service_db"]
       interval: 10s
       timeout: 5s
       retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
-    container_name: service-order-rabbitmq
+    container_name: service-order-os-rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
@@ -125,7 +127,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog:v1.0.1
-    container_name: service-order-mailhog
+    container_name: service-order-os-mailhog
     ports:
       - "1025:1025"
       - "8025:8025"
