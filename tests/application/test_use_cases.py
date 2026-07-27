@@ -9,13 +9,13 @@ from src.application.use_cases import (
     RegisterAdminUserCommand,
     RegisterAdminUserUseCase,
 )
+from src.domain.events import DomainEvent
+from src.domain.service_order import ServiceOrder, ServiceOrderStatus
+from src.infrastructure.config.settings import Settings
 from src.infrastructure.repositories.in_memory_admin_user_repository import (
     InMemoryAdminUserRepository,
 )
 from src.infrastructure.security import AdminJwtService, PasswordHasher
-from src.infrastructure.config.settings import Settings
-from src.domain.events import DomainEvent
-from src.domain.service_order import ServiceOrder, ServiceOrderStatus
 
 
 class InMemoryServiceOrderRepository:
@@ -51,6 +51,21 @@ def test_open_service_order_persists_and_publishes_quote_request() -> None:
         == ServiceOrderStatus.QUOTE_REQUESTED
     )
     assert publisher.events[0].event_type == "OS_OPENED"
+
+
+def test_quote_created_is_consumed_without_publishing_quote_requested() -> None:
+    repository = InMemoryServiceOrderRepository()
+    publisher = EventCollector()
+    service_order = OpenServiceOrderUseCase(repository, publisher).execute(
+        OpenServiceOrderCommand("customer-1", "vehicle-1", "Brake inspection")
+    )
+
+    handled = HandleSagaEventUseCase(repository, publisher).execute(
+        _event("QUOTE_CREATED", service_order.service_order_id, quote_id="quote-1")
+    )
+
+    assert handled.status == ServiceOrderStatus.QUOTE_REQUESTED
+    assert [event.event_type for event in publisher.events] == ["OS_OPENED"]
 
 
 def test_handle_saga_happy_path_reaches_completed_status() -> None:

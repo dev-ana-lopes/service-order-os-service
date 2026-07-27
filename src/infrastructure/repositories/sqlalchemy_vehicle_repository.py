@@ -84,7 +84,9 @@ class SqlAlchemyVehicleRepository:
     def get(self, vehicle_id: str) -> Vehicle:
         with self._session_factory() as session:
             row = (
-                session.execute(select(vehicles).where(vehicles.c.vehicle_id == vehicle_id))
+                session.execute(
+                    select(vehicles).where(vehicles.c.vehicle_id == vehicle_id)
+                )
                 .mappings()
                 .first()
             )

@@ -69,7 +69,9 @@ def open_service_order(
         if payload.customer_id != principal.customer_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail="Customer token cannot create service orders for another customer",
+                detail=(
+                    "Customer token cannot create service orders for another customer"
+                ),
             )
         customer_id = str(principal.customer_id)
     try:

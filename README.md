@@ -150,6 +150,7 @@ Useful local URLs:
 
 Notes:
 
+- This repository keeps the shared local RabbitMQ broker for the other Phase 4 services.
 - `docker compose up` forces `APP_RUNTIME_MODE=real`, even if `.env` still says `memory`.
 - `MIGRATE_ON_STARTUP` is disabled in local Docker because schema changes are expected to run through explicit migration commands or jobs, not automatically on container start.
 

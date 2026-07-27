@@ -6,6 +6,7 @@ from src.domain.events import DomainEvent
 
 INTEGRATION_EVENT_TYPES = {
     "OS_OPENED",
+    "QUOTE_CREATED",
     "QUOTE_APPROVED",
     "PAYMENT_PREFERENCE_CREATED",
     "PAYMENT_PENDING",

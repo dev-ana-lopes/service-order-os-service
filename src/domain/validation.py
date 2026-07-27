@@ -28,7 +28,9 @@ def is_valid_cnpj(value: str) -> bool:
         return False
 
     def calc_digit(base: str, weights: list[int]) -> str:
-        total = sum(int(digit) * weight for digit, weight in zip(base, weights, strict=False))
+        total = sum(
+            int(digit) * weight for digit, weight in zip(base, weights, strict=False)
+        )
         mod = total % 11
         return "0" if mod < 2 else str(11 - mod)
 

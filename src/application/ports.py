@@ -3,8 +3,8 @@ from __future__ import annotations
 from typing import Protocol
 
 from src.domain.admin_user import AdminUser
-from src.domain.events import DomainEvent
 from src.domain.customer import Customer
+from src.domain.events import DomainEvent
 from src.domain.service_order import ServiceOrder
 from src.domain.vehicle import Vehicle
 

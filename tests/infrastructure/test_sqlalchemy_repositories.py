@@ -5,11 +5,11 @@ from src.domain.vehicle import Vehicle
 from src.infrastructure.repositories.processed_event_repositories import (
     SqlAlchemyProcessedEventRepository,
 )
-from src.infrastructure.repositories.sqlalchemy_customer_repository import (
-    SqlAlchemyCustomerRepository,
-)
 from src.infrastructure.repositories.sqlalchemy_admin_user_repository import (
     SqlAlchemyAdminUserRepository,
+)
+from src.infrastructure.repositories.sqlalchemy_customer_repository import (
+    SqlAlchemyCustomerRepository,
 )
 from src.infrastructure.repositories.sqlalchemy_service_order_repository import (
     SqlAlchemyServiceOrderRepository,

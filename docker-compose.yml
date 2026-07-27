@@ -43,7 +43,7 @@ services:
       CUSTOMER_JWT_ALGORITHM: ${CUSTOMER_JWT_ALGORITHM:-HS256}
       CUSTOMER_JWT_ISSUER: ${CUSTOMER_JWT_ISSUER:-service-order-auth-lambda/development}
       HEALTHCHECK_TIMEOUT_SECONDS: ${HEALTHCHECK_TIMEOUT_SECONDS:-5}
-      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
+      RABBITMQ_URL: ${DOCKER_RABBITMQ_URL:-amqp://guest:guest@rabbitmq:5672/%2F}
       RABBITMQ_EXCHANGE: ${RABBITMQ_EXCHANGE:-service-order.events}
       RABBITMQ_ROUTING_KEY: ${RABBITMQ_ROUTING_KEY:-service-order.os}
       RABBITMQ_QUEUE: ${RABBITMQ_QUEUE:-service-order.os.events}

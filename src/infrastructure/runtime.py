@@ -26,11 +26,11 @@ from src.infrastructure.repositories.processed_event_repositories import (
     InMemoryProcessedEventRepository,
     SqlAlchemyProcessedEventRepository,
 )
-from src.infrastructure.repositories.sqlalchemy_customer_repository import (
-    SqlAlchemyCustomerRepository,
-)
 from src.infrastructure.repositories.sqlalchemy_admin_user_repository import (
     SqlAlchemyAdminUserRepository,
+)
+from src.infrastructure.repositories.sqlalchemy_customer_repository import (
+    SqlAlchemyCustomerRepository,
 )
 from src.infrastructure.repositories.sqlalchemy_service_order_repository import (
     SqlAlchemyServiceOrderRepository,

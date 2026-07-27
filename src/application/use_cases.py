@@ -90,6 +90,8 @@ class HandleSagaEventUseCase:
     def _apply(
         self, event: DomainEvent, service_order: ServiceOrder
     ) -> DomainEvent | None:
+        if event.event_type == "QUOTE_CREATED":
+            return None
         if event.event_type == "QUOTE_APPROVED":
             return service_order.mark_quote_approved(str(event.payload["quote_id"]))
         if event.event_type == "PAYMENT_PREFERENCE_CREATED":
@@ -194,7 +196,10 @@ class UpdateCustomerUseCase:
 
         if command.email != customer.email:
             other_email = self._repository.find_by_email(command.email)
-            if other_email is not None and other_email.customer_id != command.customer_id:
+            if (
+                other_email is not None
+                and other_email.customer_id != command.customer_id
+            ):
                 raise ValueError("Email already registered")
 
         customer.name = command.name

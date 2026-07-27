@@ -3,14 +3,14 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, EmailStr, Field
 
-from src.domain.auth import AuthenticatedPrincipal
-from src.presentation.dependencies.auth import get_current_principal
 from src.application.use_cases import (
     LoginAdminUserCommand,
     LoginAdminUserUseCase,
     RegisterAdminUserCommand,
     RegisterAdminUserUseCase,
 )
+from src.domain.auth import AuthenticatedPrincipal
+from src.presentation.dependencies.auth import get_current_principal
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -64,7 +64,9 @@ def register(request_body: RegisterRequest, request: Request) -> RegisterRespons
             )
         )
     except ValueError as exc:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail=str(exc)
+        ) from exc
     return RegisterResponse(user_id=user.user_id)
 
 
@@ -96,5 +98,7 @@ def validate_token(
         "role": principal.role,
         "customer_id": principal.customer_id,
         "issuer": principal.issuer,
-        "email": None if "email" not in principal.claims else str(principal.claims["email"]),
+        "email": None
+        if "email" not in principal.claims
+        else str(principal.claims["email"]),
     }

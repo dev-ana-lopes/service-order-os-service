@@ -54,7 +54,8 @@ class Settings(BaseSettings):
     CORS_ALLOW_CREDENTIALS: bool = True
     TRUSTED_HOSTS: Annotated[list[str], NoDecode] = Field(default_factory=lambda: ["*"])
     DATABASE_URL: str = (
-        "postgresql+asyncpg://os_service_user:os_service_password@localhost:5432/os_service_db"
+        "postgresql+asyncpg://os_service_user:os_service_password@localhost:5432/"
+        "os_service_db"
     )
     EXPECTED_DATABASE_NAME: str = "os_service_db"
     EXPECTED_DATABASE_USERNAME: str = "os_service_user"
