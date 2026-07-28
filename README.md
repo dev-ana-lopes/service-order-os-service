@@ -8,6 +8,8 @@ This service owns the service order identity, status history, Saga orchestration
 
 ## Architecture
 
+The complete Phase 4 architecture, Saga strategy, service boundaries, databases, communication and technology rationale is documented in [docs/architecture/fase4-final.md](docs/architecture/fase4-final.md).
+
 - `src/domain`: service order entity, status transitions, history, and domain events.
 - `src/application`: use cases and ports for repositories and event publishers.
 - `src/infrastructure`: settings, logging, repositories, observability, and messaging adapters.
